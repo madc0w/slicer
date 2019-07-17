@@ -1,0 +1,22 @@
+body {
+	margin: 6px;
+	font-family: "Lato", sans-serif;
+	background-color: lightyellow;
+}
+
+canvas {
+	border-width: 2px;
+	border-color: black;
+	border-style: solid;
+	border-radius: 8px;
+	background-color: white;
+	position: absolute;
+}
+
+#polygon1 {
+	
+}
+
+#polygon2 {
+	
+}
