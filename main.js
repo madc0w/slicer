@@ -85,6 +85,7 @@ function slice() {
 		context.strokeStyle = "#00ff00";
 		const segments = [];
 		const _points = points["polygon" + polygonId];
+		console.log("points", _points);
 		for (var i in _points) {
 			if (i > 0) {
 				segments.push([ _points[i - 1], _points[i] ]);
@@ -107,6 +108,7 @@ function slice() {
 				}
 
 				if (isGood) {
+
 					// ensure that segment is not outside of polygon
 					const midpoint = {
 						x : (segment[0].x + segment[1].x) / 2,
@@ -164,35 +166,94 @@ function slice() {
 
 			}
 
-			const triangle = {
-				points : [ segment[0], segment[1], _points[(i + 1) % _points.length] ]
-			};
+			//			const triangle = {
+			//				points : [ segment[0], segment[1], _points[(i + 1) % _points.length] ]
+			//			};
 
 		}
 	}
+}
+
+function test() {
+	points.polygon1 = [
+		{
+			x : 69,
+			y : 100
+		},
+		{
+			x : 61,
+			y : 286
+		},
+		{
+			x : 154,
+			y : 186
+		},
+		{
+			x : 208,
+			y : 259
+		},
+		{
+			x : 298,
+			y : 153
+		},
+	];
+	points.polygon2 = [
+		{
+			x : 155,
+			y : 137
+		},
+		{
+			x : 132,
+			y : 315
+		},
+		{
+			x : 323,
+			y : 286
+		},
+	];
+
+	isClosed.polygon1 = true;
+	isClosed.polygon2 = true;
+	repaint("polygon1");
+	repaint("polygon2");
+	slice();
+}
+
+function clear1() {
+	points.polygon1 = [];
+	points.polygon2 = [];
+
+	isClosed.polygon1 = false;
+	isClosed.polygon2 = false;
+	repaint("polygon1");
+	repaint("polygon2");
 }
 
 function repaint(elementId) {
 	const canvas = $("#" + elementId).get(0);
 	const context = canvas.getContext("2d");
 	context.clearRect(0, 0, canvas.height, canvas.width);
-	var prevPoint = points[elementId][points[elementId].length - 1];
-	context.strokeStyle = "#000000";
-	context.fillStyle = "rgba(255, 20, 0, 0.4)";
-	context.beginPath();
-	context.moveTo(prevPoint.x, prevPoint.y);
-	for (var point of points[elementId]) {
-		context.lineTo(point.x, point.y); //
-	}
-	context.closePath();
-	context.fill();
-
-	for (var point of points[elementId]) {
-		context.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
-		context.fill();
+	// for obscure reasons, clearRect refuses to clear the whole canvas.  fillRect has the same problem.  so......
+	context.clearRect(canvas.width / 2, 0, canvas.height, canvas.width);
+	if (points[elementId].length > 0) {
+		var prevPoint = points[elementId][points[elementId].length - 1];
+		context.strokeStyle = "#000000";
+		context.fillStyle = "rgba(255, 20, 0, 0.4)";
 		context.beginPath();
-		context.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
-		context.stroke(); //
+		context.moveTo(prevPoint.x, prevPoint.y);
+		for (var point of points[elementId]) {
+			context.lineTo(point.x, point.y); //
+		}
+		context.closePath();
+		context.fill();
+
+		for (var point of points[elementId]) {
+			context.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
+			context.fill();
+			context.beginPath();
+			context.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
+			context.stroke(); //
+		}
 	}
 }
 
@@ -261,4 +322,13 @@ function distance(p1, p2) {
 
 function pointsEqual(p1, p2) {
 	return p1.x == p2.x && p1.y == p2.y;
+}
+
+function isPointIn(point, _points) {
+	for (var p of points) {
+		if (pointsEqual(p, point)) {
+			return true;
+		} //
+	}
+	return false;
 }

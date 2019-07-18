@@ -20,3 +20,40 @@ canvas {
 #polygon2 {
 	
 }
+
+.button {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	cursor: pointer;
+	text-align: center;
+	padding: 4px;
+	background-color: #e32129;
+	color: white;
+	border-radius: 8px;
+	font-weight: bold;
+	border-width: 2px;
+	border-style: solid;
+	border-color: #222;
+	box-shadow: 8px 8px 8px #666;
+	max-width: 120px;
+}
+
+.button:hover {
+	color: black;
+	background-color: white;
+	border-width: 2px;
+	border-color: #e32129;
+}
+
+#controls {
+	position: absolute;
+	top: 420px;
+	width: 100%;
+}
+
+#controls .button {
+	margin-bottom: 12px;
+}
+
+#canvas-container {
+}
