@@ -79,6 +79,7 @@ function onLoad() {
 }
 
 function slice() {
+	var allTriangles = [];
 	for (var polygonId = 1; polygonId <= 2; polygonId++) {
 		const canvas = $("#polygon" + polygonId).get(0);
 		const context = canvas.getContext("2d");
@@ -90,6 +91,7 @@ function slice() {
 		}
 		console.log("points", _points);
 
+		const triangles = [];
 		while (_points.length > 3) {
 			var ear = findEar(_points);
 			context.beginPath();
@@ -97,121 +99,48 @@ function slice() {
 			context.lineTo(ear.segment[1].x, ear.segment[1].y);
 			context.stroke();
 
+			const triangle = {
+				points : [
+					ear.segment[0],
+					ear.segment[1],
+					_points[ear.pointIndex]
+				],
+				context : context,
+			};
+			triangles.push(triangle);
+
 			_points.splice(ear.pointIndex, 1);
 		}
 
-
-	//		for (var i in _points) {
-	//			if (i > 0) {
-	//				segments.push([ _points[i - 1], _points[i] ]);
-	//			} else {
-	//				segments.push([ _points[i], _points[_points.length - 1] ]);
-	//			}
-	//		}
-	//		for (var i in _points) {
-	//			i = parseInt(i);
-	//			for (var j = i + 2; j < _points.length; j++) {
-	//				j = parseInt(j);
-	//				const segment = [ _points[i], _points[j] ];
-	//				for (var k in segments) {
-	//					k = parseInt(k);
-	//					var isGood = true;
-	//					if (isIntersecting(segment, segments[k])) {
-	//						isGood = false;
-	//						break;
-	//					}
-	//				}
-	//
-	//				if (isGood) {
-	//
-	//					// ensure that segment is not outside of polygon
-	//					const midpoint = {
-	//						x : (segment[0].x + segment[1].x) / 2,
-	//						y : (segment[0].y + segment[1].y) / 2
-	//					};
-	//					// reverse x & y to get perpendicular slope
-	//					const dx = segment[0].y - segment[1].y;
-	//					const dy = segment[0].x - segment[1].x;
-	//					var p1,
-	//						p2;
-	//					var scaleFactor = 1;
-	//					do {
-	//						const scale = scaleFactor++ / (dx * dx + dy * dy);
-	//						p1 = {
-	//							x : Math.round(midpoint.x + dx * scale),
-	//							y : Math.round(midpoint.y + dy * scale)
-	//						};
-	//						p2 = {
-	//							x : Math.round(midpoint.x - dx * scale),
-	//							y : Math.round(midpoint.y - dy * scale)
-	//						};
-	//					} while (distance(p1, p2) < 4);
-	//
-	//					const p1Data = context.getImageData(p1.x, p1.y, 1, 1).data;
-	//					const p2Data = context.getImageData(p1.x, p1.y, 1, 1).data;
-	//					console.log("i", i);
-	//					console.log("j", j);
-	//					console.log("p1", p1);
-	//					console.log("p1Data", p1Data);
-	//					console.log("p2", p2);
-	//					console.log("p2Data", p2Data);
-	//
-	//					if (p1Data[0] == 0 && p1Data[1] == 0 && p1Data[2] == 0 &&
-	//						p2Data[0] == 0 && p2Data[1] == 0 && p2Data[2] == 0) {
-	//						// outside!
-	//						console.log("outside");
-	//						isGood = false;
-	//					}
-	//
-	//					if (isGood) {
-	//						segments.push(segment);
-	//						context.beginPath();
-	//						context.moveTo(segment[0].x, segment[0].y);
-	//						context.lineTo(segment[1].x, segment[1].y);
-	//						context.stroke();
-	//					}
-	//				}
-	//			}
-	//		}
-	//
-	//		for (var i in segments) {
-	//			const segment1 = segments[i];
-	//			for (var j in segments) {
-	//				const segment2 = segments[j];
-	//
-	//			}
-	//
-	//			//			const triangle = {
-	//			//				points : [ segment[0], segment[1], _points[(i + 1) % _points.length] ]
-	//			//			};
-	//
-	//		}
+		triangles.push({
+			points : _points,
+			context : context,
+		});
+		allTriangles = allTriangles.concat(triangles);
 	}
+
+	var i = 0;
+	function f() {
+		setTimeout(() => {
+			if (i < allTriangles.length) {
+				const triangle = allTriangles[i++];
+				context = triangle.context;
+				context.fillStyle = hsvToRgb(Math.random(), 0.8, 0.8);
+				context.beginPath();
+				context.moveTo(triangle.points[0].x, triangle.points[0].y);
+				context.lineTo(triangle.points[1].x, triangle.points[1].y);
+				context.lineTo(triangle.points[2].x, triangle.points[2].y);
+				context.fill();
+				f();
+			}
+		}, 400);
+	}
+	f();
+
 }
 
 function test() {
 	points.polygon1 = [
-
-		//		{
-		//			x : 86,
-		//			y : 153
-		//		},
-		//		{
-		//			x : 104,
-		//			y : 304
-		//		},
-		//		{
-		//			x : 177,
-		//			y : 156
-		//		},
-		//		{
-		//			x : 143,
-		//			y : 42
-		//		},
-		//		{
-		//			x : 156,
-		//			y : 180
-		//		}
 
 		{
 			x : 86,
@@ -262,38 +191,6 @@ function test() {
 			y : 180
 		},
 
-	//		{
-	//			x : 86,
-	//			y : 133
-	//		},
-	//		//		{
-	//		//			x : 72,
-	//		//			y : 289
-	//		//		},
-	//		//		{
-	//		//			x : 132,
-	//		//			y : 200
-	//		//		},
-	//		{
-	//			x : 160,
-	//			y : 326
-	//		},
-	//		{
-	//			x : 204,
-	//			y : 187
-	//		},
-	//		//		{
-	//		//			x : 246,
-	//		//			y : 337
-	//		//		},
-	//		//		{
-	//		//			x : 266,
-	//		//			y : 167
-	//		//		},
-	//		{
-	//			x : 160,
-	//			y : 38
-	//		} 
 	];
 	points.polygon2 = [
 		{
@@ -488,4 +385,59 @@ function findEar(_points) {
 		}
 	}
 	return null;
+}
+
+function randomColor() {
+	const n = Math.round(Math.random() * (1 << 24));
+	var c = n.toString(16);
+	while (c.length < 6) {
+		c = "0" + c;
+	}
+	return "#" + c;
+}
+
+function hsvToRgb(h, s, v) {
+	var i = Math.floor(h * 6);
+	var f = h * 6 - i;
+	var p = v * (1 - s);
+	var q = v * (1 - f * s);
+	var t = v * (1 - (1 - f) * s);
+	var r,
+		g,
+		b;
+	switch (i % 6) {
+	case 0:
+		r = v, g = t, b = p;
+		break;
+	case 1:
+		r = q, g = v, b = p;
+		break;
+	case 2:
+		r = p, g = v, b = t;
+		break;
+	case 3:
+		r = p, g = q, b = v;
+		break;
+	case 4:
+		r = t, g = p, b = v;
+		break;
+	case 5:
+		r = v, g = p, b = q;
+		break;
+	}
+
+	r = Math.round(r * 255).toString(16);
+	g = Math.round(g * 255).toString(16);
+	b = Math.round(b * 255).toString(16);
+	if (r.length < 2) {
+		r = "0" + r;
+	}
+	if (g.length < 2) {
+		g = "0" + g;
+	}
+	if (b.length < 2) {
+		b = "0" + b;
+	}
+	return "#" + r + g + b;
+
 }
