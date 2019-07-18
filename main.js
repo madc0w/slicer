@@ -219,7 +219,7 @@ function test() {
 	slice();
 }
 
-function clear1() {
+function clearCanvases() {
 	points.polygon1 = [];
 	points.polygon2 = [];
 
