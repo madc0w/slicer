@@ -1,5 +1,5 @@
 
-const pointRadius = 8;
+const pointRadius = 4;
 const initialPointRadius = 16;
 const sounds = {
 	incorrect : new Audio("incorrect.mp3"),
