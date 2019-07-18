@@ -1,4 +1,3 @@
-
 const pointRadius = 4;
 const initialPointRadius = 16;
 const sounds = {
@@ -32,59 +31,9 @@ function onLoad() {
 		if (_lastPoint) {
 			for (var i in points[elementId]) {
 				if (i > 0) {
-					var slope1 = (points[elementId][i - 1].y - points[elementId][i].y) / (points[elementId][i - 1].x - points[elementId][i].x);
-					if (!Number.isFinite(slope1)) {
-						slope1 = Number.MAX_SAFE_INTEGER;
-					}
-					var slope2 = (_lastPoint.y - point.y) / (_lastPoint.x - point.x);
-					if (!Number.isFinite(slope2)) {
-						slope2 = Number.MAX_SAFE_INTEGER;
-					}
-					//					console.log("slope1 ", slope1);
-					//					console.log("slope2 ", slope2);
-
-					const b1 = points[elementId][i].y - slope1 * points[elementId][i].x;
-					const b2 = point.y - slope2 * point.x;
-
-					const intersectionPoint = {};
-					intersectionPoint.x = (b2 - b1) / (slope1 - slope2);
-					intersectionPoint.y = slope2 * (intersectionPoint.x - point.x) + point.y;
-					//					console.log("intersectionPoint", intersectionPoint);
-					const minX1 = Math.min(_lastPoint.x, point.x);
-					const maxX1 = Math.max(_lastPoint.x, point.x);
-					const minY1 = Math.min(_lastPoint.y, point.y);
-					const maxY1 = Math.max(_lastPoint.y, point.y);
-					const minX2 = Math.min(points[elementId][i - 1].x, points[elementId][i].x);
-					const maxX2 = Math.max(points[elementId][i - 1].x, points[elementId][i].x);
-					const minY2 = Math.min(points[elementId][i - 1].y, points[elementId][i].y);
-					const maxY2 = Math.max(points[elementId][i - 1].y, points[elementId][i].y);
-					//					console.log("current segment min x", minX1);
-					//					console.log("current segment max x", maxX1);
-					//					console.log("current segment min y", minY1);
-					//					console.log("current segment max y", maxY1);
-					//					console.log("intersecting segment min x", minX2);
-					//					console.log("intersecting segment max x", maxX2);
-					//					console.log("intersecting segment min y", minY2);
-					//					console.log("intersecting segment max y", maxY2);
-					if (intersectionPoint.x > minX1 &&
-						intersectionPoint.x < maxX1 &&
-						intersectionPoint.y > minY1 &&
-						intersectionPoint.y < maxY1 &&
-						intersectionPoint.x > minX2 &&
-						intersectionPoint.x < maxX2 &&
-						intersectionPoint.y > minY2 &&
-						intersectionPoint.y < maxY2 &&
-						!(_lastPoint.x == Math.round(intersectionPoint.x) && _lastPoint.y == Math.round(intersectionPoint.y))) {
-
-						//						context.fillStyle = "rgba(255, 0, 0, 1)";
-						//						context.beginPath();
-						//						context.arc(intersectionPoint.x, intersectionPoint.y, 4, 0, Math.PI * 2);
-						//						context.fill();
-						//						context.strokeStyle = "#000000";
-						//						context.beginPath();
-						//						context.arc(intersectionPoint.x, intersectionPoint.y, 4, 0, Math.PI * 2);
-						//						context.stroke();
-
+					const polygonSideSegment = [ points[elementId][i - 1], points[elementId][i] ];
+					const newSegment = [ _lastPoint, point ];
+					if (isIntersecting(polygonSideSegment, newSegment)) {
 						sounds.incorrect.play();
 						return;
 					}
@@ -97,6 +46,10 @@ function onLoad() {
 				point.y = points[elementId].y;
 				isClosed[elementId] = true;
 				repaint(elementId);
+
+				if (isClosed.polygon1 && isClosed.polygon2) {
+					slice();
+				}
 				return;
 			}
 		}
@@ -123,6 +76,16 @@ function onLoad() {
 	$("canvas").attr("width", canvasWidth);
 
 	$("#polygon2").css("left", 16 + canvasWidth);
+}
+
+function slice() {
+	var polygonId = 1;
+	const canvas = $("#polygon" + polygonId).get(0);
+	const context = canvas.getContext("2d");
+	context.strokeStyle = "#00ff00";
+	for (var i in points["polygon" + polygonId]) {
+
+	}
 }
 
 function repaint(elementId) {
@@ -159,6 +122,52 @@ function drawLine(canvas, x1, y1, m) {
 	y = m * (x - x1) + y1;
 	context.lineTo(x, y);
 	context.stroke();
+}
+
+function isIntersecting(segment1, segment2) {
+	var slope1 = (segment1[0].y - segment1[1].y) / (segment1[0].x - segment1[1].x);
+	if (!Number.isFinite(slope1)) {
+		slope1 = Number.MAX_SAFE_INTEGER;
+	}
+	var slope2 = (segment2[0].y - segment2[1].y) / (segment2[0].x - segment2[1].x);
+	if (!Number.isFinite(slope2)) {
+		slope2 = Number.MAX_SAFE_INTEGER;
+	}
+	//					console.log("slope1 ", slope1);
+	//					console.log("slope2 ", slope2);
+
+	const b1 = segment1[1].y - slope1 * segment1[1].x;
+	const b2 = segment2[1].y - slope2 * segment2[1].x;
+
+	const intersectionPoint = {};
+	intersectionPoint.x = (b2 - b1) / (slope1 - slope2);
+	intersectionPoint.y = slope2 * (intersectionPoint.x - segment2[1].x) + segment2[1].y;
+	//					console.log("intersectionPoint", intersectionPoint);
+	const minX1 = Math.min(segment2[0].x, segment2[1].x);
+	const maxX1 = Math.max(segment2[0].x, segment2[1].x);
+	const minY1 = Math.min(segment2[0].y, segment2[1].y);
+	const maxY1 = Math.max(segment2[0].y, segment2[1].y);
+	const minX2 = Math.min(segment1[0].x, segment1[1].x);
+	const maxX2 = Math.max(segment1[0].x, segment1[1].x);
+	const minY2 = Math.min(segment1[0].y, segment1[1].y);
+	const maxY2 = Math.max(segment1[0].y, segment1[1].y);
+	//					console.log("current segment min x", minX1);
+	//					console.log("current segment max x", maxX1);
+	//					console.log("current segment min y", minY1);
+	//					console.log("current segment max y", maxY1);
+	//					console.log("intersecting segment min x", minX2);
+	//					console.log("intersecting segment max x", maxX2);
+	//					console.log("intersecting segment min y", minY2);
+	//					console.log("intersecting segment max y", maxY2);
+	return intersectionPoint.x > minX1 &&
+		intersectionPoint.x < maxX1 &&
+		intersectionPoint.y > minY1 &&
+		intersectionPoint.y < maxY1 &&
+		intersectionPoint.x > minX2 &&
+		intersectionPoint.x < maxX2 &&
+		intersectionPoint.y > minY2 &&
+		intersectionPoint.y < maxY2 &&
+		!(segment2[0].x == Math.round(intersectionPoint.x) && segment2[0].y == Math.round(intersectionPoint.y));
 }
 
 function distance(p1, p2) {
