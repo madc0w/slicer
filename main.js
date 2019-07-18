@@ -79,12 +79,96 @@ function onLoad() {
 }
 
 function slice() {
-	var polygonId = 1;
-	const canvas = $("#polygon" + polygonId).get(0);
-	const context = canvas.getContext("2d");
-	context.strokeStyle = "#00ff00";
-	for (var i in points["polygon" + polygonId]) {
+	for (var polygonId = 1; polygonId <= 2; polygonId++) {
+		const canvas = $("#polygon" + polygonId).get(0);
+		const context = canvas.getContext("2d");
+		context.strokeStyle = "#00ff00";
+		const segments = [];
+		const _points = points["polygon" + polygonId];
+		for (var i in _points) {
+			if (i > 0) {
+				segments.push([ _points[i - 1], _points[i] ]);
+			} else {
+				segments.push([ _points[i], _points[_points.length - 1] ]);
+			}
+		}
+		for (var i in _points) {
+			i = parseInt(i);
+			for (var j = i + 1; j < _points.length; j++) {
+				j = parseInt(j);
+				const segment = [ _points[i], _points[j] ];
+				for (var k in segments) {
+					k = parseInt(k);
+					var isGood = true;
+					if (isIntersecting(segment, segments[k])) {
+						isGood = false;
+						break;
+					}
+				}
 
+				if (isGood) {
+					// ensure that segment is not outside of polygon
+					const midpoint = {
+						x : (segment[0].x + segment[1].x) / 2,
+						y : (segment[0].y + segment[1].y) / 2
+					};
+					// reverse x & y to get perpendicular slope
+					const dx = segment[0].y - segment[1].y;
+					const dy = segment[0].x - segment[1].x;
+					var p1,
+						p2;
+					var scaleFactor = 1;
+					do {
+						const scale = scaleFactor++ / (dx * dx + dy * dy);
+						p1 = {
+							x : Math.round(midpoint.x + dx * scale),
+							y : Math.round(midpoint.y + dy * scale)
+						};
+						p2 = {
+							x : Math.round(midpoint.x - dx * scale),
+							y : Math.round(midpoint.y - dy * scale)
+						};
+					} while (distance(p1, p2) < 4);
+
+					const p1Data = context.getImageData(p1.x, p1.y, 1, 1).data;
+					const p2Data = context.getImageData(p1.x, p1.y, 1, 1).data;
+					console.log("i", i);
+					console.log("j", j);
+					console.log("p1", p1);
+					console.log("p1Data", p1Data);
+					console.log("p2", p2);
+					console.log("p2Data", p2Data);
+
+					if (p1Data[0] == 0 && p1Data[1] == 0 && p1Data[2] == 0 &&
+						p2Data[0] == 0 && p2Data[1] == 0 && p2Data[2] == 0) {
+						// outside!
+						console.log("outside");
+						isGood = false;
+					}
+
+					if (isGood) {
+						segments.push(segment);
+						context.beginPath();
+						context.moveTo(segment[0].x, segment[0].y);
+						context.lineTo(segment[1].x, segment[1].y);
+						context.stroke();
+					}
+				}
+			}
+		}
+
+		for (var i in segments) {
+			const segment1 = segments[i];
+			for (var j in segments) {
+				const segment2 = segments[j];
+
+			}
+
+			const triangle = {
+				points : [ segment[0], segment[1], _points[(i + 1) % _points.length] ]
+			};
+
+		}
 	}
 }
 
@@ -108,7 +192,8 @@ function repaint(elementId) {
 		context.fill();
 		context.beginPath();
 		context.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
-		context.stroke(); }
+		context.stroke(); //
+	}
 }
 
 
@@ -172,4 +257,8 @@ function isIntersecting(segment1, segment2) {
 
 function distance(p1, p2) {
 	return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+}
+
+function pointsEqual(p1, p2) {
+	return p1.x == p2.x && p1.y == p2.y;
 }
